@@ -1,7 +1,6 @@
 import datetime
+
 import streamlit as st
-import pandas as pd
-import numpy as np
 
 st.title('❶Hello Worldアプリ')
 
@@ -23,10 +22,10 @@ fruit = st.radio('どちらのほうがお好きですか？', ['みかん', '�
 if st.button('決めました'):
     f'**そうですか、『{fruit}』って美味しいですものね。**'
 
-st.sidebar.text_input("text input")
-st.sidebar.text_area("text area")
-st.sidebar.slider("slider", 0, 100, 50)
-st.sidebar.file_uploader("Choose file")
+st.sidebar.text_input('text input')
+st.sidebar.text_area('text area')
+st.sidebar.slider('slider', 0, 100, 50)
+st.sidebar.file_uploader('Choose file')
 
 # import anthropic
 
