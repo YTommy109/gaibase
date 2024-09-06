@@ -14,13 +14,16 @@ import streamlit as st
 class ApplicationID:
     id: UUID
 
+
 @dataclass
 class WorkspaceID:
     id: UUID
 
+
 @dataclass
 class AssetID:
     id: UUID
+
 
 @dataclass
 class Application:
@@ -40,11 +43,10 @@ class Workspace:
 class Asset:
     id: UUID
     workspace_id: UUID
-    input_file: str
+    title: str
     application: Application
-    output_file: str | None
     created_at: datetime
-    requested_at: datetime | None = None # リクエスト日時
+    requested_at: datetime | None = None  # リクエスト日時
     finished_at: datetime | None = None  # 完了日時
 
 
@@ -75,7 +77,7 @@ if 'workspace' not in st.session_state:
 
 
 def pane_workspaces():
-    """ Workspace 一覧を表示する """
+    """Workspace 一覧を表示する"""
     st.title('管理システム')
 
     if st.button('Workspace を作成する'):
@@ -83,20 +85,21 @@ def pane_workspaces():
 
     st.divider()
 
-    hd1, hd2, hd3, hd4 = st.columns(4)
-    hd1.write('**No.**')
-    hd2.write('**名前**')
-    hd3.write('**作成日時**')
+    COLUMNS = [1, 6, 3, 1]
+    hds = st.columns(COLUMNS)
+    hds[0].write('**No.**')
+    hds[1].write('**名前**')
+    hds[2].write('**作成日時**')
 
     def click_workspace(workspace: Workspace):
         st.session_state.workspace = workspace
 
     for idx, workspace in enumerate(st.session_state.workspaces):
-        col1, col2, col3, col4 = st.columns(4)
-        col1.write(idx + 1)
-        col2.write(workspace.title)
-        col3.write(workspace.created_at.strftime('%Y-%m-%d %H:%M:%S'))
-        col4.button('Go', key=workspace.id, on_click=click_workspace, kwargs={'workspace': workspace})
+        cols = st.columns(COLUMNS)
+        cols[0].write(idx + 1)
+        cols[1].write(workspace.title)
+        cols[2].write(workspace.created_at.strftime('%Y-%m-%d %H:%M:%S'))
+        cols[3].button('Go', key=workspace.id, on_click=click_workspace, kwargs={'workspace': workspace})
 
 
 def pane_assets():
@@ -109,51 +112,47 @@ def pane_assets():
 
     st.divider()
 
-    hd1, hd2, hd3, hd4, hd5, hd6 = st.columns(6)
-    hd1.write('**No.**')
-    hd2.write('**入力ファイル**')
-    hd3.write('**業務 Excel シート**')
-    hd4.write('**出力ファイル**')
-    hd5.write('**作成日時**')
-    hd6.write('')
+    COLUMNS = [1, 5, 3, 2]
+    hds = st.columns(COLUMNS)
+    hds[0].write('**No.**')
+    hds[1].write('**業務 Excel シート**')
+    hds[2].write('**作成日時**')
+    hds[3].write('')
 
     assets = filter(lambda x: x.workspace_id == st.session_state.workspace.id, st.session_state.assets)
     for idx, asset in enumerate(assets):
-        col1, col2, col3, col4, col5, col6 = st.columns(6)
-        col1.write(idx + 1)
-        col2.write(asset.input_file)
-        col3.write(asset.application.name)
-        col4.write(asset.output_file)
-        col5.write(asset.created_at.strftime('%Y-%m-%d %H:%M:%S'))
-        col6.button('Rerun')
-        # Excel の中で実行するなら Rerun はいらんか…
-        # でも、アーカイブはどうするんやろか…?
+        cols = st.columns(COLUMNS)
+
+        cols[0].write(idx + 1)
+        cols[1].write(asset.application.name)
+        cols[2].write(asset.created_at.strftime('%Y-%m-%d %H:%M:%S'))
+        cols[3].button('Run')
 
 
 @st.dialog('Workspace 作成')
 def create_workspace() -> None:
-    """ Workspace を作成するダイアログ"""
+    """Workspace を作成するダイアログ"""
     title = st.text_input('名前')
-    c1, c2 = st.columns(2)
-    if c1.button('作成', type='primary'):
+    cols = st.columns(3)
+    if cols[1].button('キャンセル', type='secondary', use_container_width=True):
+        st.rerun()
+    if cols[2].button('セットアップ', type='primary', use_container_width=True):
         workspace = Workspace(uuid4(), title, datetime.now())
         st.session_state.workspaces.append(workspace)
-        st.rerun()
-    if c2.button('キャンセル', type='secondary'):
         st.rerun()
 
 
 @st.dialog('新規アセット作成')
 def create_asset() -> None:
     """アセットを作成するダイアログ"""
-    file = st.text_input('入力ファイル')
-    app = st.selectbox('アプリケーション', APPLICATIONS, format_func=lambda x: x.name)
-    c1, c2 = st.columns(2)
-    if c1.button('作成', type='primary'):
-        asset = Asset(uuid4(), st.session_state.workspace.id, file, app, None, datetime.now(), None, None)
-        st.session_state.assets.append(asset)
+    title = st.text_input('名前')
+    app = st.selectbox('業務 Excel', APPLICATIONS, format_func=lambda x: x.name)
+    cols = st.columns(3)
+    if cols[1].button('キャンセル', type='secondary', use_container_width=True):
         st.rerun()
-    if c2.button('キャンセル', type='secondary'):
+    if cols[2].button('作成', type='primary', use_container_width=True):
+        asset = Asset(uuid4(), st.session_state.workspace.id, title, app, datetime.now())
+        st.session_state.assets.append(asset)
         st.rerun()
 
 
