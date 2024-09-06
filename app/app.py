@@ -5,6 +5,7 @@ from uuid import UUID
 from uuid import uuid4
 
 import streamlit as st
+from lib import Application
 
 
 #
@@ -23,12 +24,6 @@ class WorkspaceID:
 @dataclass
 class AssetID:
     id: UUID
-
-
-@dataclass
-class Application:
-    id: UUID
-    name: str
 
 
 @dataclass
@@ -74,6 +69,9 @@ if 'assets' not in st.session_state:
 
 if 'workspace' not in st.session_state:
     st.session_state.workspace = None
+
+if 'applications' not in st.session_state:
+    st.session_state.applications = APPLICATIONS
 
 
 def pane_workspaces():
@@ -146,7 +144,7 @@ def create_workspace() -> None:
 def create_asset() -> None:
     """アセットを作成するダイアログ"""
     title = st.text_input('名前')
-    app = st.selectbox('業務 Excel', APPLICATIONS, format_func=lambda x: x.name)
+    app: Application = st.selectbox('業務 Excel', st.session_state.applications, format_func=lambda x: x.name)
     cols = st.columns(3)
     if cols[1].button('キャンセル', type='secondary', use_container_width=True):
         st.rerun()

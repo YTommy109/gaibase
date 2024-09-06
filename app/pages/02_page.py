@@ -29,3 +29,6 @@ with tab1:
     if st.button('Foo'):
         st.session_state.value = 'Foo'
         st.rerun()
+
+    if st.toggle('Activate feature'):
+        st.write('Feature activated!')
