@@ -1,26 +1,23 @@
 from dataclasses import dataclass
 from uuid import UUID
-
+from pydantic import BaseModel
+from typing import TypeAlias
+from datetime import datetime
 
 #
 # 型定義
 #
-@dataclass
-class ApplicationID:
-    id: UUID
+ApplicationID: TypeAlias = UUID
+WorkspaceID: TypeAlias = UUID
+AssetID: TypeAlias = UUID
+ApplicationID: TypeAlias = UUID
 
-
-@dataclass
-class WorkspaceID:
-    id: UUID
-
-
-@dataclass
-class AssetID:
-    id: UUID
-
-
-@dataclass
-class Application:
-    id: UUID
+class Application(BaseModel):
+    id: ApplicationID
     name: str
+
+class Workspace(BaseModel):
+    id: WorkspaceID
+    title: str
+    created_at: datetime
+    freezed_at: datetime | None = None

@@ -30,10 +30,10 @@ with st.expander('業務 Excel シート'):
     application = cols[0].text_input('業務 Excel シート')
     if cols[1].button('追加', key='add_application', use_container_width=True):
         if len(application) > 0:
-            st.session_state.applications.append(Application(uuid4(), application))
+            st.session_state.applications.append(Application(**{'id': uuid4(), 'name': application}))
 
     cols = st.columns(1)
-    df = pd.DataFrame([asdict(it) for it in st.session_state.applications])
+    df = pd.DataFrame([it.dict() for it in st.session_state.applications])
     df = df.rename(columns={'id': 'ID', 'name': '業務 Excel シート'})
     cols[0].dataframe(df, hide_index=True, use_container_width=True)
 
