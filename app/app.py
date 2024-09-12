@@ -1,29 +1,12 @@
 # app.py
-from dataclasses import dataclass
 from datetime import datetime
-from uuid import UUID
 from uuid import uuid4
 
+import pandas as pd
 import streamlit as st
-from lib import Application, Workspace
-
-
-#
-# 型定義
-#
-
-
-
-@dataclass
-class Asset:
-    id: UUID
-    workspace_id: UUID
-    title: str
-    application: Application
-    created_at: datetime
-    requested_at: datetime | None = None  # リクエスト日時
-    finished_at: datetime | None = None  # 完了日時
-
+from lib import Application
+from lib import Asset
+from lib import Workspace
 
 #
 # 定数
@@ -87,7 +70,6 @@ def pane_workspaces():
 
     st.divider()
 
-
     # アーカイブされたワークスペースを表示
     with st.expander('アーカイブ'):
         for idx, workspace in enumerate(filter(lambda x: x.freezed_at is not None, st.session_state.workspaces)):
@@ -117,14 +99,24 @@ def pane_assets():
     hds[3].write('')
 
     assets = filter(lambda x: x.workspace_id == st.session_state.workspace.id, st.session_state.assets)
+    app_map = {app.id: app for app in st.session_state.applications}
     for idx, asset in enumerate(assets):
         cols = st.columns(COLUMNS)
 
         cols[0].write(idx + 1)
-        cols[1].write(asset.application.name)
+        cols[1].write(app_map[asset.application_id].name)
         cols[2].write(asset.created_at.strftime('%Y-%m-%d %H:%M:%S'))
         if st.session_state.workspace.freezed_at is None:
-            cols[3].button('Run')
+            cols[3].button('Run', key=f'run_{asset.id}')
+
+    st.divider()
+
+    with st.expander('アカウント'):
+        df = pd.DataFrame([it.dict() for it in st.session_state.accounts])
+        df2 = pd.concat([df['email'], df['name'], df['role']], axis=1)
+        df2.index = df2.index + 1
+        cols = st.columns(1)
+        cols[0].dataframe(df2, hide_index=False, use_container_width=True)
 
 
 @st.dialog('Workspace 作成')
@@ -143,13 +135,24 @@ def create_workspace() -> None:
 @st.dialog('新規アセット作成')
 def create_asset() -> None:
     """アセットを作成するダイアログ"""
+    workspace: Workspace = st.session_state.workspace
     title = st.text_input('名前')
+    print(st.session_state.applications[0])
     app: Application = st.selectbox('業務 Excel', st.session_state.applications, format_func=lambda x: x.name)
+
     cols = st.columns(3)
     if cols[1].button('キャンセル', type='secondary', use_container_width=True):
         st.rerun()
     if cols[2].button('作成', type='primary', use_container_width=True):
-        asset = Asset(uuid4(), st.session_state.workspace.id, title, app, datetime.now())
+        asset = Asset(
+            **{
+                'id': uuid4(),
+                'workspace_id': workspace.id,
+                'title': title,
+                'application_id': app.id,
+                'created_at': datetime.now(),
+            }
+        )
         st.session_state.assets.append(asset)
         st.rerun()
 

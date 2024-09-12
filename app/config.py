@@ -1,7 +1,6 @@
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.engine.url import URL
 from sqlalchemy.engine.create import create_engine
-
+from sqlalchemy.engine.url import URL
+from sqlalchemy.orm import sessionmaker
 
 username = 'USER'
 password = 'PASSWORD'
@@ -13,9 +12,10 @@ url = URL.create(
     password=password,
     host=hostname,
     database=dbname,
-    query={"charset": "utf8"},
+    query={'charset': 'utf8'},
 )
 engine = create_engine(url, pool_recycle=10)
+
 
 def get_db_session():
     return sessionmaker(bind=engine)()
