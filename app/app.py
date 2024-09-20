@@ -13,9 +13,9 @@ from lib import Workspace
 #
 
 APPLICATIONS: list[Application] = [
-    Application(**{'id': uuid4(), 'name': '業務 Excel シート 1'}),
-    Application(**{'id': uuid4(), 'name': '業務 Excel シート 2'}),
-    Application(**{'id': uuid4(), 'name': '業務 Excel シート 3'}),
+    Application(id=uuid4(), name='Excel シート 1'),
+    Application(id=uuid4(), name='Excel シート 2'),
+    Application(id=uuid4(), name='Excel シート 3'),
 ]
 
 #
@@ -23,8 +23,8 @@ APPLICATIONS: list[Application] = [
 #
 if 'workspaces' not in st.session_state:
     st.session_state.workspaces = [
-        Workspace(**{'id': uuid4(), 'title': 'Workspace1', 'created_at': datetime.now()}),
-        Workspace(**{'id': uuid4(), 'title': 'Workspace2', 'created_at': datetime.now()}),
+        Workspace(id=uuid4(), title='Workspace1', created_at=datetime.now()),
+        Workspace(id=uuid4(), title='Workspace2', created_at=datetime.now()),
     ]
 
 if 'assets' not in st.session_state:
@@ -127,7 +127,7 @@ def create_workspace() -> None:
     if cols[1].button('キャンセル', type='secondary', use_container_width=True):
         st.rerun()
     if cols[2].button('セットアップ', type='primary', use_container_width=True):
-        workspace = Workspace(**{'id': uuid4(), 'title': title, 'created_at': datetime.now()})
+        workspace = Workspace(id=uuid4(), title=title, created_at=datetime.now())
         st.session_state.workspaces.append(workspace)
         st.rerun()
 
@@ -145,13 +145,11 @@ def create_asset() -> None:
         st.rerun()
     if cols[2].button('作成', type='primary', use_container_width=True):
         asset = Asset(
-            **{
-                'id': uuid4(),
-                'workspace_id': workspace.id,
-                'title': title,
-                'application_id': app.id,
-                'created_at': datetime.now(),
-            }
+            id=uuid4(),
+            workspace_id=workspace.id,
+            title=title,
+            application_id=app.id,
+            created_at=datetime.now(),
         )
         st.session_state.assets.append(asset)
         st.rerun()

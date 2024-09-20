@@ -14,20 +14,26 @@ class Role(Enum):
     USER = 'user'
 
 
+ROLE_LABEL = {Role.ADMIN: '運用', Role.USER: '一般'}
+
 ApplicationID: TypeAlias = UUID
 WorkspaceID: TypeAlias = UUID
 AssetID: TypeAlias = UUID
 AccountID: TypeAlias = UUID
 
 
-class Account(BaseModel):
+class Account(BaseModel, frozen=True):
     id: AccountID
     email: str
     name: str
     role: Role
 
+    @property
+    def role_name(self):
+        return ROLE_LABEL[self.role]
 
-class Application(BaseModel):
+
+class Application(BaseModel, frozen=True):
     id: ApplicationID
     name: str
 
@@ -39,7 +45,7 @@ class Workspace(BaseModel):
     freezed_at: datetime | None = None
 
 
-class Asset(BaseModel):
+class Asset(BaseModel, frozen=True):
     id: AssetID
     workspace_id: WorkspaceID
     title: str
