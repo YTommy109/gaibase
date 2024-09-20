@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.12.0/.schema/devbox.schema.json",
   "packages": [
     "python312@latest",
-    "ruff@latest"
+    "postgresql_16@latest"
   ],
   "shell": {
     "init_hook": [
