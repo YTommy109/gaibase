@@ -18,7 +18,7 @@ ROLE_LABEL = {Role.ADMIN: '運用', Role.USER: '一般'}
 
 ApplicationID: TypeAlias = UUID
 WorkspaceID: TypeAlias = UUID
-AssetID: TypeAlias = UUID
+ToolID: TypeAlias = UUID
 AccountID: TypeAlias = UUID
 
 
@@ -45,8 +45,8 @@ class Workspace(BaseModel):
     freezed_at: datetime | None = None
 
 
-class Asset(BaseModel, frozen=True):
-    id: AssetID
+class Tool(BaseModel, frozen=True):
+    id: ToolID
     workspace_id: WorkspaceID
     title: str
     application_id: ApplicationID
