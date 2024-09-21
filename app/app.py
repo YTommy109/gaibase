@@ -4,13 +4,12 @@ from uuid import uuid4
 
 import pandas as pd
 import streamlit as st
-from lib import Account
 from lib import Application
-from lib import MemberRole
 from lib import Tool
 from lib import Workspace
-from lib import WorkspaceMember
-from util.db import CursorFromPool
+from repository.account import get_account_by_name
+from repository.account import get_active_accounts
+from repository.workspace import get_owned_workspaces
 from util.db import Database
 
 Database.initialize('postgres://tokutomi@127.0.0.1:5432/gaibase_dev?sslmode=disable')
@@ -30,31 +29,22 @@ APPLICATIONS: list[Application] = [
 # セッションステートの初期化
 #
 def initialize(APPLICATIONS):
+    if 'user' not in st.session_state:
+        if 'user' in st.query_params:
+            st.session_state.user = get_account_by_name(st.query_params['user'])
+        if 'user' in st.session_state:
+            st.write(st.session_state.user.email)
+        else:
+            st.write('ログインしていません')
+
     if 'accounts' not in st.session_state:
-        with CursorFromPool(Account) as cur:
-            cur.execute('select * from accounts_active')
-            st.session_state.accounts = cur.fetchall()
+        st.session_state.accounts = get_active_accounts()
 
     if 'workspaces' not in st.session_state:
-        with CursorFromPool(Workspace) as cur:
-            cur.execute('select * from workspaces_active')
-            st.session_state.workspaces = cur.fetchall()
-
-    if 'workspace_members' not in st.session_state:
-        st.session_state.workspace_members = [
-            WorkspaceMember(
-                id=uuid4(),
-                workspace_id=st.session_state.workspaces[0].id,
-                account_id=st.session_state.accounts[0].id,
-                role=MemberRole.MANAGER,
-            ),
-            WorkspaceMember(
-                id=uuid4(),
-                workspace_id=st.session_state.workspaces[1].id,
-                account_id=st.session_state.accounts[1].id,
-                role=MemberRole.MANAGER,
-            ),
-        ]
+        if 'user' in st.session_state:
+            st.session_state.workspaces = get_owned_workspaces(st.session_state.user)
+        else:
+            st.session_state.workspaces = []
 
     if 'tools' not in st.session_state:
         st.session_state.tools = []
