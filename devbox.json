@@ -2,7 +2,8 @@
   "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.12.0/.schema/devbox.schema.json",
   "packages": [
     "python312@latest",
-    "postgresql_16@latest"
+    "postgresql_16@latest",
+    "dbmate@latest"
   ],
   "shell": {
     "init_hook": [
@@ -10,12 +11,26 @@
       "source .venv/bin/activate"
     ],
     "scripts": {
-      "start":       ["streamlit run app/app.py"],
-      "test":        ["echo \"Error: no test specified\" && exit 1"],
-      "mysql_start": ["docker compose up -d"],
-      "mysql_stop":  ["docker compose down"],
-      "freeze":      ["uv pip freeze > requirements.txt"],
-      "sync":        ["uv pip sync requirements.txt"]
+      "start": [
+        "streamlit run app/app.py"
+      ],
+      "test": [
+        "echo \"Error: no test specified\" && exit 1"
+      ],
+      "freeze": [
+        "uv pip freeze > requirements.txt"
+      ],
+      "sync": [
+        "uv pip sync requirements.txt"
+      ],
+      "migrate:up": [
+        "dbmate up",
+        "dbmate -e TEST_DATABASE_URL up"
+      ],
+      "migrate:down": [
+        "dbmate down",
+        "dbmate -e TEST_DATABASE_URL down"
+      ],
     }
   }
 }

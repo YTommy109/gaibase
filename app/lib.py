@@ -9,12 +9,19 @@ from pydantic import BaseModel
 #
 # 型定義
 #
-class Role(Enum):
+class SystemRole(Enum):
     ADMIN = 'admin'
     USER = 'user'
 
 
-ROLE_LABEL = {Role.ADMIN: '運用', Role.USER: '一般'}
+class MemberRole(Enum):
+    MANAGER = 'manager'
+    LEADER = 'leader'
+    MEMBER = 'member'
+    MAINTAINER = 'maintainer'
+
+
+ROLE_LABEL = {SystemRole.ADMIN: '運用', SystemRole.USER: '一般'}
 
 ApplicationID: TypeAlias = UUID
 WorkspaceID: TypeAlias = UUID
@@ -26,7 +33,7 @@ class Account(BaseModel, frozen=True):
     id: AccountID
     email: str
     name: str
-    role: Role
+    role: SystemRole
 
     @property
     def role_name(self):
@@ -43,6 +50,13 @@ class Workspace(BaseModel):
     title: str
     created_at: datetime
     freezed_at: datetime | None = None
+
+
+class WorkspaceMember(BaseModel):
+    id: UUID
+    workspace_id: WorkspaceID
+    account_id: AccountID
+    role: MemberRole
 
 
 class Tool(BaseModel, frozen=True):

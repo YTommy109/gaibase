@@ -4,15 +4,12 @@ import pandas as pd
 import streamlit as st
 from lib import Account
 from lib import Application
-from lib import Role
+from lib import SystemRole
 
 
 def initialize():
     if 'accounts' not in st.session_state:
-        st.session_state.accounts = [
-            Account(**{'id': uuid4(), 'email': 'gy@pwc.com', 'name': 'Yoshi', 'role': Role.ADMIN}),
-            Account(**{'id': uuid4(), 'email': 'yt@pwc.com', 'name': 'Toku', 'role': Role.ADMIN}),
-        ]
+        st.session_state.accounts = []
 
     if 'applications' not in st.session_state:
         st.session_state.applications = []
@@ -26,7 +23,7 @@ def pane_account_list():
         if cols[2].button('追加', use_container_width=True):
             if len(email) > 0 and len(name) > 0:
                 st.session_state.accounts.append(
-                    Account(**{'id': uuid4(), 'email': email, 'name': name, 'role': Role.USER})
+                    Account(**{'id': uuid4(), 'email': email, 'name': name, 'role': SystemRole.USER})
                 )
 
         temp = [{'email': it.email, 'name': it.name, 'role_name': it.role_name} for it in st.session_state.accounts]
@@ -37,9 +34,9 @@ def pane_account_list():
 
 
 def pane_excel_list():
-    with st.expander('業務 Excel シート'):
+    with st.expander('Excel シート'):
         cols = st.columns([3, 1])
-        application = cols[0].text_input('業務 Excel シート')
+        application = cols[0].text_input('Excel シート')
         if cols[1].button('追加', key='add_application', use_container_width=True):
             if len(application) > 0:
                 st.session_state.applications.append(Application(**{'id': uuid4(), 'name': application}))

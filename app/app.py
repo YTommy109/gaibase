@@ -4,9 +4,16 @@ from uuid import uuid4
 
 import pandas as pd
 import streamlit as st
+from lib import Account
 from lib import Application
+from lib import MemberRole
 from lib import Tool
 from lib import Workspace
+from lib import WorkspaceMember
+from util.db import CursorFromPool
+from util.db import Database
+
+Database.initialize('postgres://tokutomi@127.0.0.1:5432/gaibase_dev?sslmode=disable')
 
 #
 # 定数
@@ -18,23 +25,48 @@ APPLICATIONS: list[Application] = [
     Application(id=uuid4(), name='Excel シート 3'),
 ]
 
+
 #
 # セッションステートの初期化
 #
-if 'workspaces' not in st.session_state:
-    st.session_state.workspaces = [
-        Workspace(id=uuid4(), title='Workspace1', created_at=datetime.now()),
-        Workspace(id=uuid4(), title='Workspace2', created_at=datetime.now()),
-    ]
+def initialize(APPLICATIONS):
+    if 'accounts' not in st.session_state:
+        with CursorFromPool(Account) as cur:
+            cur.execute('select * from accounts_active')
+            st.session_state.accounts = cur.fetchall()
 
-if 'tools' not in st.session_state:
-    st.session_state.tools = []
+    if 'workspaces' not in st.session_state:
+        with CursorFromPool(Workspace) as cur:
+            cur.execute('select * from workspaces_active')
+            st.session_state.workspaces = cur.fetchall()
 
-if 'workspace' not in st.session_state:
-    st.session_state.workspace = None
+    if 'workspace_members' not in st.session_state:
+        st.session_state.workspace_members = [
+            WorkspaceMember(
+                id=uuid4(),
+                workspace_id=st.session_state.workspaces[0].id,
+                account_id=st.session_state.accounts[0].id,
+                role=MemberRole.MANAGER,
+            ),
+            WorkspaceMember(
+                id=uuid4(),
+                workspace_id=st.session_state.workspaces[1].id,
+                account_id=st.session_state.accounts[1].id,
+                role=MemberRole.MANAGER,
+            ),
+        ]
 
-if 'applications' not in st.session_state:
-    st.session_state.applications = APPLICATIONS
+    if 'tools' not in st.session_state:
+        st.session_state.tools = []
+
+    if 'workspace' not in st.session_state:
+        st.session_state.workspace = None
+
+    if 'applications' not in st.session_state:
+        st.session_state.applications = APPLICATIONS
+
+
+initialize(APPLICATIONS)
 
 
 def pane_workspaces():
