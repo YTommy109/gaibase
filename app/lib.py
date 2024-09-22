@@ -45,14 +45,14 @@ class Application(BaseModel, frozen=True):
     name: str
 
 
-class Workspace(BaseModel):
+class Workspace(BaseModel, frozen=True):
     id: WorkspaceID
     title: str
     created_at: datetime
-    freezed_at: datetime | None = None
+    disabled_at: datetime | None = None
 
 
-class WorkspaceMember(BaseModel):
+class WorkspaceMember(BaseModel, frozen=True):
     id: UUID
     workspace_id: WorkspaceID
     account_id: AccountID

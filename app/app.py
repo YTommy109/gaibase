@@ -9,6 +9,7 @@ from lib import Tool
 from lib import Workspace
 from repository.account import get_account_by_name
 from repository.account import get_active_accounts
+from repository.workspace import archive_workspace
 from repository.workspace import get_owned_workspaces
 from util.db import Database
 
@@ -32,10 +33,6 @@ def initialize(APPLICATIONS):
     if 'user' not in st.session_state:
         if 'user' in st.query_params:
             st.session_state.user = get_account_by_name(st.query_params['user'])
-        if 'user' in st.session_state:
-            st.write(st.session_state.user.email)
-        else:
-            st.write('ログインしていません')
 
     if 'accounts' not in st.session_state:
         st.session_state.accounts = get_active_accounts()
@@ -78,10 +75,11 @@ def pane_workspaces():
         st.session_state.workspace = workspace
 
     def click_freeze(workspace: Workspace):
-        workspace.freezed_at = datetime.now()
+        archive_workspace(workspace)
+        st.session_state.workspaces = get_owned_workspaces(st.session_state.user)
 
     # アーカイブされていないワークスペースを表示
-    for idx, workspace in enumerate(filter(lambda x: x.freezed_at is None, st.session_state.workspaces)):
+    for idx, workspace in enumerate(filter(lambda x: x.disabled_at is None, st.session_state.workspaces)):
         cols = st.columns(COLUMNS)
         cols[0].write(idx + 1)
         cols[1].write(workspace.title)
@@ -94,7 +92,7 @@ def pane_workspaces():
 
     # アーカイブされたワークスペースを表示
     with st.expander('アーカイブ'):
-        for idx, workspace in enumerate(filter(lambda x: x.freezed_at is not None, st.session_state.workspaces)):
+        for idx, workspace in enumerate(filter(lambda x: x.disabled_at is not None, st.session_state.workspaces)):
             cols = st.columns(COLUMNS)
             cols[0].write(idx + 1)
             cols[1].write(workspace.title)
@@ -178,7 +176,11 @@ def create_asset() -> None:
         st.rerun()
 
 
-if st.session_state.workspace:
-    pane_tool_list()
+if 'user' not in st.session_state:
+    st.write('ログインしていません')
 else:
-    pane_workspaces()
+    st.write(st.session_state.user.email)
+    if st.session_state.workspace:
+        pane_tool_list()
+    else:
+        pane_workspaces()
