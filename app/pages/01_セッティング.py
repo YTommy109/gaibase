@@ -2,9 +2,9 @@ from uuid import uuid4
 
 import pandas as pd
 import streamlit as st
-from lib import Account
 from lib import Application
-from lib import SystemRole
+from repository.account import create_account
+from repository.account import get_active_accounts
 
 
 def initialize():
@@ -22,9 +22,8 @@ def pane_account_list():
         name = cols[1].text_input('name')
         if cols[2].button('追加', use_container_width=True):
             if len(email) > 0 and len(name) > 0:
-                st.session_state.accounts.append(
-                    Account(**{'id': uuid4(), 'email': email, 'name': name, 'role': SystemRole.USER})
-                )
+                create_account(email, name)
+                st.session_state.accounts = get_active_accounts()
 
         temp = [{'email': it.email, 'name': it.name, 'role_name': it.role_name} for it in st.session_state.accounts]
         df = pd.DataFrame(temp)
@@ -49,7 +48,7 @@ def pane_excel_list():
 
 initialize()
 
-st.title('セッティング')
+st.title('システムセッティング')
 
 pane_account_list()
 pane_excel_list()
