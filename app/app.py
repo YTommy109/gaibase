@@ -7,8 +7,9 @@ import streamlit as st
 from lib import Application
 from lib import Tool
 from lib import Workspace
-from repository.account import get_account_by_name
-from repository.account import get_active_accounts
+from repository.account import fetch_account_by_name
+from repository.account import fetch_accounts
+from repository.account import fetch_workspace_accounts_by_workspace
 from repository.workspace import archive_workspace
 from repository.workspace import get_owned_workspaces
 from util.db import Database
@@ -32,10 +33,10 @@ APPLICATIONS: list[Application] = [
 def initialize(APPLICATIONS):
     if 'user' not in st.session_state:
         if 'user' in st.query_params:
-            st.session_state.user = get_account_by_name(st.query_params['user'])
+            st.session_state.user = fetch_account_by_name(st.query_params['user'])
 
     if 'accounts' not in st.session_state:
-        st.session_state.accounts = get_active_accounts()
+        st.session_state.accounts = fetch_accounts()
 
     if 'workspaces' not in st.session_state:
         if 'user' in st.session_state:
@@ -48,6 +49,9 @@ def initialize(APPLICATIONS):
 
     if 'workspace' not in st.session_state:
         st.session_state.workspace = None
+
+    if 'workspace_accounts' not in st.session_state:
+        st.session_state.workspace_accounts = []
 
     if 'applications' not in st.session_state:
         st.session_state.applications = APPLICATIONS
@@ -73,6 +77,7 @@ def pane_workspaces():
 
     def click_workspace(workspace: Workspace):
         st.session_state.workspace = workspace
+        st.session_state.workspace_accounts = fetch_workspace_accounts_by_workspace(workspace)
 
     def click_freeze(workspace: Workspace):
         archive_workspace(workspace)
@@ -105,7 +110,7 @@ def pane_tool_list():
     st.button('戻る', key='back', on_click=lambda: st.session_state.pop('workspace'))
     st.header(st.session_state.workspace.title)
 
-    if st.session_state.workspace.freezed_at is None:
+    if st.session_state.workspace.disabled_at is None:
         if st.button('ツールを作成する'):
             create_asset()
 
@@ -126,17 +131,16 @@ def pane_tool_list():
         cols[0].write(idx + 1)
         cols[1].write(app_map[tool.application_id].name)
         cols[2].write(tool.created_at.strftime('%Y-%m-%d %H:%M:%S'))
-        if st.session_state.workspace.freezed_at is None:
+        if st.session_state.workspace.disabled_at is None:
             cols[3].button('Run', key=f'run_{tool.id}')
 
     st.divider()
 
     with st.expander('アカウント'):
-        df = pd.DataFrame([it.dict() for it in st.session_state.accounts])
-        df2 = pd.concat([df['email'], df['name'], df['role']], axis=1)
-        df2.index = df2.index + 1
+        df = pd.DataFrame([{'name': it.name, 'role_name': it.role_name} for it in st.session_state.workspace_accounts])
+        df.index = df.index + 1
         cols = st.columns(1)
-        cols[0].dataframe(df2, hide_index=False, use_container_width=True)
+        cols[0].dataframe(df, hide_index=False, use_container_width=True)
 
 
 @st.dialog('Workspace 作成')

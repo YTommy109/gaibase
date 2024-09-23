@@ -40,7 +40,7 @@ class CursorFromPool:
         """with ブロックの出口"""
         if exc_val is not None and self.con is not None:
             # エラーならロールバック
-            self.con.rollbak()
+            self.con.rollback()
         else:
             self.cur.close() if self.cur else None
             self.con.commit() if self.con else None

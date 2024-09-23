@@ -4,12 +4,15 @@ import pandas as pd
 import streamlit as st
 from lib import Application
 from repository.account import create_account
-from repository.account import get_active_accounts
+from repository.account import fetch_accounts
+from util.db import Database
+
+Database.initialize('postgres://tokutomi@127.0.0.1:5432/gaibase_dev?sslmode=disable')
 
 
 def initialize():
     if 'accounts' not in st.session_state:
-        st.session_state.accounts = []
+        st.session_state.accounts = fetch_accounts()
 
     if 'applications' not in st.session_state:
         st.session_state.applications = []
@@ -23,7 +26,7 @@ def pane_account_list():
         if cols[2].button('追加', use_container_width=True):
             if len(email) > 0 and len(name) > 0:
                 create_account(email, name)
-                st.session_state.accounts = get_active_accounts()
+                st.session_state.accounts = fetch_accounts()
 
         temp = [{'email': it.email, 'name': it.name, 'role_name': it.role_name} for it in st.session_state.accounts]
         df = pd.DataFrame(temp)

@@ -14,14 +14,20 @@ class SystemRole(Enum):
     USER = 'user'
 
 
-class MemberRole(Enum):
+class WorkspaceRole(Enum):
     MANAGER = 'manager'
     LEADER = 'leader'
     MEMBER = 'member'
     MAINTAINER = 'maintainer'
 
 
-ROLE_LABEL = {SystemRole.ADMIN: '運用', SystemRole.USER: '一般'}
+SYSTEM_ROLE_LABEL: dict[SystemRole, str] = {SystemRole.ADMIN: '運用', SystemRole.USER: '一般'}
+WORKSPACE_ROLE_LABEL: dict[WorkspaceRole, str] = {
+    WorkspaceRole.MANAGER: 'マネージャー',
+    WorkspaceRole.LEADER: 'リーダー',
+    WorkspaceRole.MEMBER: 'メンバー',
+    WorkspaceRole.MAINTAINER: 'メンテナー',
+}
 
 ApplicationID: TypeAlias = UUID
 WorkspaceID: TypeAlias = UUID
@@ -37,7 +43,7 @@ class Account(BaseModel, frozen=True):
 
     @property
     def role_name(self):
-        return ROLE_LABEL[self.role]
+        return SYSTEM_ROLE_LABEL[self.role]
 
 
 class Application(BaseModel, frozen=True):
@@ -56,7 +62,17 @@ class WorkspaceMember(BaseModel, frozen=True):
     id: UUID
     workspace_id: WorkspaceID
     account_id: AccountID
-    role: MemberRole
+    role: WorkspaceRole
+
+
+class WorkspaceAccount(BaseModel, frozen=True):
+    id: AccountID
+    name: str
+    role: WorkspaceRole
+
+    @property
+    def role_name(self):
+        return WORKSPACE_ROLE_LABEL[self.role]
 
 
 class Tool(BaseModel, frozen=True):
