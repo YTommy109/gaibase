@@ -136,11 +136,42 @@ def pane_tool_list():
 
     st.divider()
 
-    with st.expander('アカウント'):
+    with st.expander('メンバー'):
+        cols = st.columns([10, 2])
+        if cols[1].button('Edit', use_container_width=True):
+            manage_members()
         df = pd.DataFrame([{'name': it.name, 'role_name': it.role_name} for it in st.session_state.workspace_accounts])
         df.index = df.index + 1
         cols = st.columns(1)
         cols[0].dataframe(df, hide_index=False, use_container_width=True)
+
+
+@st.dialog('メンバー管理')
+def manage_members() -> None:
+    """メンバー管理のダイアログ"""
+    cols = st.columns([8, 4], vertical_alignment='bottom')
+    cols[0].selectbox('メンバー', st.session_state.accounts, format_func=lambda x: x.name)
+    cols[1].button('追加', type='secondary', use_container_width=True)
+
+    st.divider()
+
+    COLUMNS = [1, 5, 3, 2]
+    hds = st.columns(COLUMNS)
+    hds[0].write('**No.**')
+    hds[1].write('**名前**')
+    hds[2].write('**権限**')
+
+    cols = st.columns(COLUMNS)
+    for idx, account in enumerate(st.session_state.workspace_accounts):
+        cols[0].text(idx + 1)
+        cols[1].text(account.name)
+        cols[2].text(account.role_name)
+
+    cols = st.columns(3)
+    if cols[1].button('キャンセル', type='secondary', use_container_width=True):
+        st.rerun()
+    if cols[2].button('保存', type='primary', use_container_width=True):
+        st.rerun()
 
 
 @st.dialog('Workspace 作成')
