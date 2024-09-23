@@ -4,14 +4,16 @@ from uuid import uuid4
 
 import pandas as pd
 import streamlit as st
+from lib import Account
 from lib import Application
 from lib import Tool
 from lib import Workspace
 from repository.account import fetch_account_by_name
 from repository.account import fetch_accounts
 from repository.account import fetch_workspace_accounts_by_workspace
+from repository.workspace import add_member_to_workspace
 from repository.workspace import archive_workspace
-from repository.workspace import get_owned_workspaces
+from repository.workspace import fetch_owned_workspaces
 from util.db import Database
 
 Database.initialize('postgres://tokutomi@127.0.0.1:5432/gaibase_dev?sslmode=disable')
@@ -40,7 +42,7 @@ def initialize(APPLICATIONS):
 
     if 'workspaces' not in st.session_state:
         if 'user' in st.session_state:
-            st.session_state.workspaces = get_owned_workspaces(st.session_state.user)
+            st.session_state.workspaces = fetch_owned_workspaces(st.session_state.user)
         else:
             st.session_state.workspaces = []
 
@@ -55,6 +57,10 @@ def initialize(APPLICATIONS):
 
     if 'applications' not in st.session_state:
         st.session_state.applications = APPLICATIONS
+
+
+def refresh_members():
+    st.session_state.workspace_accounts = fetch_workspace_accounts_by_workspace(st.session_state.workspace)
 
 
 initialize(APPLICATIONS)
@@ -77,11 +83,11 @@ def pane_workspaces():
 
     def click_workspace(workspace: Workspace):
         st.session_state.workspace = workspace
-        st.session_state.workspace_accounts = fetch_workspace_accounts_by_workspace(workspace)
+        refresh_members()
 
     def click_freeze(workspace: Workspace):
         archive_workspace(workspace)
-        st.session_state.workspaces = get_owned_workspaces(st.session_state.user)
+        st.session_state.workspaces = fetch_owned_workspaces(st.session_state.user)
 
     # アーカイブされていないワークスペースを表示
     for idx, workspace in enumerate(filter(lambda x: x.disabled_at is None, st.session_state.workspaces)):
@@ -150,8 +156,10 @@ def pane_tool_list():
 def manage_members() -> None:
     """メンバー管理のダイアログ"""
     cols = st.columns([8, 4], vertical_alignment='bottom')
-    cols[0].selectbox('メンバー', st.session_state.accounts, format_func=lambda x: x.name)
-    cols[1].button('追加', type='secondary', use_container_width=True)
+    temp: Account = cols[0].selectbox('メンバー', st.session_state.accounts, format_func=lambda x: x.name)
+    if cols[1].button('追加', type='secondary', use_container_width=True):
+        add_member_to_workspace(st.session_state.workspace, temp)
+        refresh_members()
 
     st.divider()
 

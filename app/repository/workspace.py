@@ -5,23 +5,41 @@ from lib import Workspace
 from util.db import CursorFromPool
 
 
-def get_active_workspaces() -> list[Workspace]:
-    with CursorFromPool(Workspace) as cur:
-        cur.execute('select * from workspaces_active')
-        return cur.fetchall()
-
-
-def get_owned_workspaces(account: Account) -> list[Workspace]:
+def fetch_active_workspaces() -> list[Workspace]:
     with CursorFromPool(Workspace) as cur:
         cur.execute(
             """
-            SELECT * FROM workspace_members
-            JOIN  workspaces ON workspaces.id = workspace_members.workspace_id
-            WHERE account_id = %s
+            SELECT *
+            FROM   workspaces_active
+            """
+        )
+        return cur.fetchall()
+
+
+def fetch_owned_workspaces(account: Account) -> list[Workspace]:
+    with CursorFromPool(Workspace) as cur:
+        cur.execute(
+            """
+            SELECT *
+            FROM   workspace_members
+            JOIN   workspaces ON workspaces.id = workspace_members.workspace_id
+            WHERE  account_id = %s
             """,
             (account.id,),
         )
         return cur.fetchall()
+
+
+def add_member_to_workspace(workspace: Workspace, account: Account) -> Workspace:
+    with CursorFromPool() as cur:
+        cur.execute(
+            """
+            INSERT INTO workspace_members (workspace_id, account_id)
+            VALUES (%s, %s)
+            """,
+            (workspace.id, account.id),
+        )
+    return workspace
 
 
 def archive_workspace(workspace: Workspace) -> Workspace:
