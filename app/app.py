@@ -155,8 +155,14 @@ def pane_tool_list():
 @st.dialog('メンバー管理')
 def manage_members() -> None:
     """メンバー管理のダイアログ"""
+
+    def pick_candidates() -> list[Account]:
+        all_ids = set(it.id for it in st.session_state.accounts)
+        already_ids = set(it.id for it in st.session_state.workspace_accounts)
+        return [it for it in st.session_state.accounts if it.id in list(all_ids - already_ids)]
+
     cols = st.columns([8, 4], vertical_alignment='bottom')
-    temp: Account = cols[0].selectbox('メンバー', st.session_state.accounts, format_func=lambda x: x.name)
+    temp: Account = cols[0].selectbox('メンバー', pick_candidates(), format_func=lambda x: x.name)
     if cols[1].button('追加', type='secondary', use_container_width=True):
         add_member_to_workspace(st.session_state.workspace, temp)
         refresh_members()
@@ -200,7 +206,6 @@ def create_asset() -> None:
     """ツールを作成するダイアログ"""
     workspace: Workspace = st.session_state.workspace
     title = st.text_input('名前')
-    print(st.session_state.applications[0])
     app: Application = st.selectbox('Excel', st.session_state.applications, format_func=lambda x: x.name)
 
     cols = st.columns(3)

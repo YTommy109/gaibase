@@ -45,6 +45,14 @@ class Account(BaseModel, frozen=True):
     def role_name(self):
         return SYSTEM_ROLE_LABEL[self.role]
 
+    def __eq__(self, other):
+        if not isinstance(other, Account):
+            return False
+        return self.id == other.id
+
+    def __hash__(self):
+        return hash(self.id)
+
 
 class Application(BaseModel, frozen=True):
     id: ApplicationID
