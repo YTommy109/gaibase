@@ -1,5 +1,8 @@
 # app.py
+import json
 from datetime import datetime
+from logging import config
+from logging import getLogger
 from uuid import uuid4
 
 import pandas as pd
@@ -18,6 +21,14 @@ from util.db import Database
 
 Database.initialize('postgres://tokutomi@127.0.0.1:5432/gaibase_dev?sslmode=disable')
 
+with open('app/log_config.json', 'r') as f:
+    log_conf = json.load(f)
+    config.dictConfig(log_conf)
+
+logger = getLogger(__name__)
+
+logger.info('Start main()')
+
 #
 # 定数
 #
@@ -32,7 +43,7 @@ APPLICATIONS: list[Application] = [
 #
 # セッションステートの初期化
 #
-def initialize(APPLICATIONS):
+def initialize() -> None:
     if 'user' not in st.session_state:
         if 'user' in st.query_params:
             st.session_state.user = fetch_account_by_name(st.query_params['user'])
@@ -59,14 +70,14 @@ def initialize(APPLICATIONS):
         st.session_state.applications = APPLICATIONS
 
 
-def refresh_members():
+def refresh_members() -> None:
     st.session_state.workspace_accounts = fetch_workspace_accounts_by_workspace(st.session_state.workspace)
 
 
-initialize(APPLICATIONS)
+initialize()
 
 
-def pane_workspaces():
+def pane_workspaces() -> None:
     """Workspace 一覧を表示する"""
     st.title('管理システム')
 
@@ -81,11 +92,11 @@ def pane_workspaces():
     hds[1].write('**名前**')
     hds[2].write('**作成日時**')
 
-    def click_workspace(workspace: Workspace):
+    def click_workspace(workspace: Workspace) -> None:
         st.session_state.workspace = workspace
         refresh_members()
 
-    def click_freeze(workspace: Workspace):
+    def click_freeze(workspace: Workspace) -> None:
         archive_workspace(workspace)
         st.session_state.workspaces = fetch_owned_workspaces(st.session_state.user)
 
@@ -111,7 +122,7 @@ def pane_workspaces():
             cols[3].button('Go', key=f'go_{workspace.id}', on_click=click_workspace, kwargs={'workspace': workspace})
 
 
-def pane_tool_list():
+def pane_tool_list() -> None:
     """ツール一覧を表示する"""
     st.button('戻る', key='back', on_click=lambda: st.session_state.pop('workspace'))
     st.header(st.session_state.workspace.title)

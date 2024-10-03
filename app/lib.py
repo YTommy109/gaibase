@@ -1,9 +1,10 @@
 from datetime import datetime
 from enum import Enum
-from typing import TypeAlias
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel
+from typing_extensions import TypeAlias
 
 
 #
@@ -42,15 +43,15 @@ class Account(BaseModel, frozen=True):
     role: SystemRole
 
     @property
-    def role_name(self):
+    def role_name(self) -> str:
         return SYSTEM_ROLE_LABEL[self.role]
 
-    def __eq__(self, other):
+    def __eq__(self, other:object) -> bool:
         if not isinstance(other, Account):
             return False
         return self.id == other.id
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.id)
 
 
@@ -63,7 +64,7 @@ class Workspace(BaseModel, frozen=True):
     id: WorkspaceID
     title: str
     created_at: datetime
-    disabled_at: datetime | None = None
+    disabled_at: Optional[datetime] = None
 
 
 class WorkspaceMember(BaseModel, frozen=True):
@@ -79,7 +80,7 @@ class WorkspaceAccount(BaseModel, frozen=True):
     role: WorkspaceRole
 
     @property
-    def role_name(self):
+    def role_name(self) -> str:
         return WORKSPACE_ROLE_LABEL[self.role]
 
 
@@ -89,5 +90,5 @@ class Tool(BaseModel, frozen=True):
     title: str
     application_id: ApplicationID
     created_at: datetime
-    requested_at: datetime | None = None  # リクエスト日時
-    finished_at: datetime | None = None  # 完了日時
+    requested_at: Optional[datetime] = None  # リクエスト日時
+    finished_at: Optional[datetime] = None  # 完了日時

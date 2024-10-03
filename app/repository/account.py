@@ -1,3 +1,5 @@
+from typing import Optional
+
 from lib import Account
 from lib import AccountID
 from lib import Workspace
@@ -15,7 +17,7 @@ def fetch_accounts() -> list[Account]:
         return cur.fetchall()
 
 
-def fetch_account_by_name(name: str) -> Account | None:
+def fetch_account_by_name(name: str) -> Optional[Account]:
     with CursorFromPool(Account) as cur:
         cur.execute(
             """
@@ -26,7 +28,7 @@ def fetch_account_by_name(name: str) -> Account | None:
         return cur.fetchone()
 
 
-def fetch_account_by_id(id: AccountID) -> Account | None:
+def fetch_account_by_id(id: AccountID) -> Optional[Account]:
     with CursorFromPool(Account) as cur:
         cur.execute(
             """

@@ -1,14 +1,18 @@
 {
   "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.12.0/.schema/devbox.schema.json",
   "packages": [
-    "python312@latest",
+    "python39@latest",
+    "python39Packages.pip",
     "postgresql_16@latest",
     "dbmate@latest"
   ],
+  "env": {
+    "VENV_DIR": ".venv"
+  },
   "shell": {
     "init_hook": [
       "echo 'Welcome to devbox!' > /dev/null",
-      "source .venv/bin/activate"
+      ". $VENV_DIR/bin/activate"
     ],
     "scripts": {
       "start": [
@@ -17,11 +21,12 @@
       "test": [
         "echo \"Error: no test specified\" && exit 1"
       ],
-      "freeze": [
-        "uv pip freeze > requirements.txt"
+      "db:init": [
+        "initdb"
       ],
-      "sync": [
-        "uv pip sync requirements.txt"
+      "db:add": [
+        "createdb gaibase_dev",
+        "createdb gaibase_test"
       ],
       "migrate:up": [
         "dbmate up",
@@ -31,6 +36,18 @@
         "dbmate down",
         "dbmate -e TEST_DATABASE_URL down"
       ],
+      "e2e:gen": [
+        "playwright codegen http://localhost:8501/ -o test.py"
+      ],
+      "e2e:run": [
+        "pytest e2e --slowmo 1000"
+      ],
+      "freeze": [
+        "pip freeze > requirements.txt"
+      ],
+      "sync": [
+        "pip sync requirements.txt"
+      ]
     }
   }
 }

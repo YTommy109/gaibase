@@ -5,12 +5,12 @@ import streamlit as st
 from lib import Application
 from repository.account import create_account
 from repository.account import fetch_accounts
-from util.db import Database
+from util.db import init_db
 
-Database.initialize('postgres://tokutomi@127.0.0.1:5432/gaibase_dev?sslmode=disable')
+init_db()
 
 
-def initialize():
+def initialize() -> None:
     if 'accounts' not in st.session_state:
         st.session_state.accounts = fetch_accounts()
 
@@ -18,7 +18,7 @@ def initialize():
         st.session_state.applications = []
 
 
-def pane_account_list():
+def pane_account_list() -> None:
     with st.expander('アカウント'):
         cols = st.columns([6, 6, 2])
         email = cols[0].text_input('email')
@@ -35,7 +35,7 @@ def pane_account_list():
         cols[0].dataframe(df, hide_index=False, use_container_width=True)
 
 
-def pane_excel_list():
+def pane_excel_list() -> None:
     with st.expander('Excel シート'):
         cols = st.columns([3, 1])
         application = cols[0].text_input('Excel シート')
@@ -55,3 +55,15 @@ st.title('システムセッティング')
 
 pane_account_list()
 pane_excel_list()
+
+st.markdown(
+    """
+    - DB 導入
+    - ログ出力
+    - Azure ログサービス
+    - ユーザー識別
+    - ユーザー割り当て
+    - ~Playwrite デモ~
+    - ~RLS の整理~
+    """
+)

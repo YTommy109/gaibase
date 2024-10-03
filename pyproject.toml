@@ -1,7 +1,7 @@
 [project]
 name = "experimental"
 version = "0.1"
-requires-python = ">=3.12"
+requires-python = "==3.9"
 license = {file = "LICENSE"}
 
 [tool.ruff]
@@ -28,11 +28,12 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.9"
 ignore_missing_imports = true
 check_untyped_defs = true
+disallow_untyped_defs = true
 
 [tool.pytest.ini_options]
 pythonpath = "app"
-testpaths = ["tests",]
+testpaths = ["tests", "e2e"]
 filterwarnings = ["ignore::DeprecationWarning",]
